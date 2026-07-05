@@ -5,7 +5,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/intercom_db
     username: postgres
-    password: 9558868
+    password: pasw
     driver-class-name: org.postgresql.Driver
 
   jpa:

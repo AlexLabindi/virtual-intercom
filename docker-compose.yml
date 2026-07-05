@@ -9,7 +9,7 @@ services:
     environment:
       POSTGRES_DB: intercom_db
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 9558868
+      POSTGRES_PASSWORD: psw
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
