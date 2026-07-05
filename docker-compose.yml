@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: intercom-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: intercom_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 9558868
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - intercom-network
+
+networks:
+  intercom-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: smart-virtual-intercom
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/intercom_db
+    username: postgres
+    password: 9558868
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+resilience4j:
+  ratelimiter:
+    instances:
+      gateRateLimiter:
+        limitForPeriod: 3
+        limitRefreshPeriod: 1m
+        timeoutDuration: 0s
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %5level [%X{callSessionId}] %logger{36} - %msg%n"
