@@ -1,20 +1,20 @@
+server:
+  port: 8090
+
 spring:
   application:
     name: smart-virtual-intercom
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/intercom_db
-    username: postgres
-    password: pasw
+    url: jdbc:postgresql://localhost:5433/${DB_NAME:intercom_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:SecretPassword2026}
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
 
 resilience4j:
   ratelimiter:
@@ -23,7 +23,3 @@ resilience4j:
         limitForPeriod: 3
         limitRefreshPeriod: 1m
         timeoutDuration: 0s
-
-logging:
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %5level [%X{callSessionId}] %logger{36} - %msg%n"

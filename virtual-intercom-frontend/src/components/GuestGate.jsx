@@ -14,7 +14,7 @@ export default function GuestGate() {
 
         try {
             // Trigger the backend API protected by Resilience4j Rate Limiting
-            const response = await fetch('http://localhost:8080/api/v1/intercom/ring', {
+            const response = await fetch('http://localhost:8090/api/v1/intercom/ring', {
                 method: 'POST'
             });
 
