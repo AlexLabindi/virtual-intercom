@@ -3,6 +3,7 @@ package com.alex.intercom.adapters.web.websocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -16,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * WebSocket Handler acting as a WebRTC Signaling Server to route structural audio session parameters.
  */
 @Component
+@CrossOrigin(origins = "*")
 public class SignalingWebSocketHandler extends TextWebSocketHandler {
 
     private static final Logger log = LoggerFactory.getLogger(SignalingWebSocketHandler.class);

@@ -8,18 +8,32 @@ export default function OwnerDashboard() {
     const [incomingCall, setIncomingCall] = useState(false);
     const [callStatus, setCallStatus] = useState('LISTENING'); // LISTENING, TALKING
 
-    useEffect(() => {
-        // Establish native WebSocket connection with the Spring Boot signaling server
-        const socket = new WebSocket('ws://localhost:8090/ws/signaling');
+  useEffect(() => {
+  console.log("Tentativo di connessione al WebSocket...");
+  const socket = new WebSocket('ws://localhost:8090/ws/signaling');
 
-        socket.onmessage = (event) => {
-            console.log('Real-time signal received:', event.data);
-            // Simulating an incoming ring event from the gate
-            setIncomingCall(true);
-        };
+  socket.onopen = () => {
+    console.log("✅ WebSocket connesso con successo al backend!");
+  };
 
-        return () => socket.close();
-    }, []);
+  socket.onmessage = (event) => {
+    console.log("📩 Messaggio ricevuto dal server:", event.data);
+    // Qui andrà la logica per mostrare l'allarme visivo
+    setIncomingCall(true);
+  };
+
+  socket.onerror = (error) => {
+    console.error("❌ Errore dettagliato del WebSocket:", error);
+  };
+
+  socket.onclose = (event) => {
+    console.warn(`⚠️ WebSocket chiuso. Codice: ${event.code}, Motivo: ${event.reason || "Nessuno specificato"}`);
+  };
+
+  return () => {
+    socket.close();
+  };
+}, []);
 
     const handleAccept = () => {
         setIncomingCall(false);
