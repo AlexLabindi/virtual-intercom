@@ -1,5 +1,6 @@
 package com.alex.intercom.domain.service;
 
+import com.alex.intercom.adapters.web.websocket.SignalingWebSocketHandler;
 import com.alex.intercom.domain.CallLog;
 import com.alex.intercom.domain.CallSession;
 import com.alex.intercom.ports.in.ManageCallUseCase;
@@ -23,11 +24,15 @@ public class CallService implements ManageCallUseCase {
 
     private final CallSessionRepositoryPort sessionRepositoryPort;
     private final CallLogRepositoryPort logRepositoryPort;
+    private final SignalingWebSocketHandler webSocketHandler;
 
     // Dependency injection through constructor (clean and testable code)
-    public CallService(CallSessionRepositoryPort sessionRepositoryPort, CallLogRepositoryPort logRepositoryPort) {
+    public CallService(CallSessionRepositoryPort sessionRepositoryPort,
+                       CallLogRepositoryPort logRepositoryPort,
+                       SignalingWebSocketHandler webSocketHandler) {
         this.sessionRepositoryPort = sessionRepositoryPort;
         this.logRepositoryPort = logRepositoryPort;
+        this.webSocketHandler = webSocketHandler;
     }
 
     @Override
@@ -51,6 +56,20 @@ public class CallService implements ManageCallUseCase {
 
         CallSession savedSession = sessionRepositoryPort.save(newSession);
         log.info("New call session successfully created with ID: {} and status: {}", sessionId, savedSession.getStatus());
+
+        // TRIGGER WEBSOCKET: Avvisa la Dashboard in tempo reale che qualcuno sta suonando
+        try {
+            String jsonPayload = String.format(
+                    "{\"event\": \"ring\", \"status\": \"%s\", \"sessionId\": \"%s\", \"guestIp\": \"%s\"}",
+                    savedSession.getStatus(),
+                    savedSession.getId().toString(),
+                    savedSession.getGuestIp()
+            );
+            webSocketHandler.broadcastNotification(jsonPayload);
+            log.info("WebSocket broadcast notification sent for session: {}", sessionId);
+        } catch (Exception e) {
+            log.error("Failed to send WebSocket broadcast notification for session: {}", sessionId, e);
+        }
 
         return savedSession;
     }
