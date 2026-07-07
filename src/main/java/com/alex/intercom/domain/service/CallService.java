@@ -115,7 +115,7 @@ public class CallService implements ManageCallUseCase {
 
         // Terminate the pure domain object logic
         session.terminate();
-        sessionRepositoryPort.save(session);
+        CallSession savedSession = sessionRepositoryPort.save(session);
 
         // Historically archive the completed call in the logs table
         CallLog callLog = new CallLog(
@@ -126,8 +126,20 @@ public class CallService implements ManageCallUseCase {
                 reason,
                 session.getGuestIp()
         );
-
         logRepositoryPort.save(callLog);
         log.info("Call session {} successfully archived in CallLog with reason: {}", sessionId, reason);
+
+        // 🔥 NOTIFICA IL WEBSOCKET: Diciamo al Frontend di resettarsi!
+        try {
+            String jsonPayload = String.format(
+                    "{\"event\": \"terminate\", \"status\": \"%s\", \"sessionId\": \"%s\"}",
+                    savedSession.getStatus(), // sarà TERMINATED o COMPLETED
+                    savedSession.getId().toString()
+            );
+            webSocketHandler.broadcastNotification(jsonPayload);
+            log.info("WebSocket termination broadcast sent for session: {}", sessionId);
+        } catch (Exception e) {
+            log.error("Failed to send WebSocket termination notification", e);
+        }
     }
 }

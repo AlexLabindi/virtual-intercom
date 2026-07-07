@@ -16,11 +16,24 @@ export default function OwnerDashboard() {
     console.log("✅ WebSocket connesso con successo al backend!");
   };
 
-  socket.onmessage = (event) => {
-    console.log("📩 Messaggio ricevuto dal server:", event.data);
-    // Qui andrà la logica per mostrare l'allarme visivo
-    setIncomingCall(true);
-  };
+      socket.onmessage = (event) => {
+          try {
+              // Estraiamo il vero testo inviato da Spring Boot
+              const data = JSON.parse(event.data);
+              console.log("📩 JSON Decodificato con successo:", data);
+
+              if (data.event === "ring") {
+                  setIncomingCall(true);
+                  setCallStatus("RINGING");
+              } else if (data.event === "terminate") {
+                  setIncomingCall(false);
+                  setCallStatus("LISTENING");
+                  alert("Chiamata terminata o rifiutata dal sistema.");
+              }
+          } catch (error) {
+              console.error("❌ Errore nella lettura del messaggio WebSocket:", error);
+          }
+      };
 
   socket.onerror = (error) => {
     console.error("❌ Errore dettagliato del WebSocket:", error);
