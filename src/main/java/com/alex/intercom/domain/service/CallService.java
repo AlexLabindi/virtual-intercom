@@ -79,28 +79,26 @@ public class CallService implements ManageCallUseCase {
         log.info("Owner is accepting the call session: {}", sessionId);
 
         CallSession session = sessionRepositoryPort.findById(sessionId)
-                .orElseThrow(() -> {
-                    log.error("Call session not found: {}", sessionId);
-                    return new IllegalArgumentException("Session not found");
-                });
+                .orElseThrow(() -> new IllegalArgumentException("Session not found"));
 
         if (!"ACTIVE".equals(session.getStatus())) {
-            log.warn("Cannot accept call. Current session status is: {}", session.getStatus());
             throw new IllegalStateException("Call is not in an active state");
         }
 
-        // Mutation inside the pure domain model
         CallSession updatedSession = new CallSession(
-                session.getId(),
-                session.getGuestIp(),
-                session.getToken(),
-                "CONNECTED", // Call is now ongoing
-                session.getCreatedAt(),
-                session.getExpiresAt()
+                session.getId(), session.getGuestIp(), session.getToken(),
+                "CONNECTED", session.getCreatedAt(), session.getExpiresAt()
         );
 
         sessionRepositoryPort.save(updatedSession);
-        log.info("Call session {} is now CONNECTED", sessionId);
+
+        // 🔥 BROADCAST DI ACCETTAZIONE: Sposta entrambi in modalità CHAT!
+        try {
+            String jsonPayload = String.format("{\"event\": \"accept\", \"sessionId\": \"%s\"}", sessionId.toString());
+            webSocketHandler.broadcastNotification(jsonPayload);
+        } catch (Exception e) {
+            log.error("Failed to send accept broadcast", e);
+        }
     }
 
     @Override

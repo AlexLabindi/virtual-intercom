@@ -1,81 +1,63 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
-/**
- * OwnerDashboard Component - Main monitoring hub open on the owner's home PC browser.
- * Listens to real-time ring notifications via WebSocket.
- */
-export default function OwnerDashboard() {
-    const [incomingCall, setIncomingCall] = useState(false);
-    const [callStatus, setCallStatus] = useState('LISTENING'); // LISTENING, TALKING
+function OwnerDashboard({ callStatus, sessionId, messages, onSendMessage }) {
+    const [typedMsg, setTypedMsg] = useState('');
 
-  useEffect(() => {
-  console.log("Tentativo di connessione al WebSocket...");
-  const socket = new WebSocket('ws://localhost:8090/ws/signaling');
-
-  socket.onopen = () => {
-    console.log("✅ WebSocket connesso con successo al backend!");
-  };
-
-      socket.onmessage = (event) => {
-          try {
-              // Estraiamo il vero testo inviato da Spring Boot
-              const data = JSON.parse(event.data);
-              console.log("📩 JSON Decodificato con successo:", data);
-
-              if (data.event === "ring") {
-                  setIncomingCall(true);
-                  setCallStatus("RINGING");
-              } else if (data.event === "terminate") {
-                  setIncomingCall(false);
-                  setCallStatus("LISTENING");
-                  alert("Chiamata terminata o rifiutata dal sistema.");
-              }
-          } catch (error) {
-              console.error("❌ Errore nella lettura del messaggio WebSocket:", error);
-          }
-      };
-
-  socket.onerror = (error) => {
-    console.error("❌ Errore dettagliato del WebSocket:", error);
-  };
-
-  socket.onclose = (event) => {
-    console.warn(`⚠️ WebSocket chiuso. Codice: ${event.code}, Motivo: ${event.reason || "Nessuno specificato"}`);
-  };
-
-  return () => {
-    socket.close();
-  };
-}, []);
-
-    const handleAccept = () => {
-        setIncomingCall(false);
-        setCallStatus('TALKING');
-        console.log('Call accepted. WebRTC peer connection starting...');
+    const handleAccept = async () => {
+        if (!sessionId) return console.error("Impossibile accettare: sessionId mancante!");
+        try {
+            await fetch(`http://localhost:8090/api/intercom/calls/${sessionId}/accept`, { method: 'POST' });
+        } catch (err) {
+            console.error("Errore durante accept:", err);
+        }
     };
 
-    const handleReject = () => {
-        setIncomingCall(false);
-        setCallStatus('LISTENING');
-        console.log('Call rejected.');
+    const handleReject = async () => {
+        if (!sessionId) return console.error("Impossibile rifiutare: sessionId mancante!");
+        try {
+            await fetch(`http://localhost:8090/api/intercom/calls/${sessionId}/terminate?reason=REJECTED`, { method: 'POST' });
+        } catch (err) {
+            console.error("Errore durante terminate:", err);
+        }
+    };
+
+    const send = (e) => {
+        e.preventDefault();
+        if (!typedMsg.trim()) return;
+        onSendMessage(typedMsg);
+        setTypedMsg('');
     };
 
     return (
-        <div style={{ padding: '40px', fontFamily: 'Arial' }}>
-            <h1>Owner Home Dashboard</h1>
-            <p>System Status: <strong>{callStatus}</strong></p>
+        <div style={{ border: '2px solid #4CAF50', padding: '20px', borderRadius: '8px', width: '350px', background: '#2a2a2a' }}>
+            <h2>🏠 Owner Home Dashboard</h2>
+            <p>Status: <strong>{callStatus}</strong></p>
 
-            {incomingCall && (
-                <div style={{ border: '2px solid red', padding: '20px', borderRadius: '8px', background: '#fff0f0' }}>
-                    <h2>🚨 Drin Drin! Someone is at the gate!</h2>
-                    <button onClick={handleAccept} style={{ marginRight: '10px', backgroundColor: 'green', color: 'white', padding: '10px' }}>
-                        Accept Call
-                    </button>
-                    <button onClick={handleReject} style={{ backgroundColor: 'red', color: 'white', padding: '10px' }}>
-                        Reject
-                    </button>
+            {callStatus === 'RINGING' && (
+                <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                    <button onClick={handleAccept} style={{ backgroundColor: 'green', color: 'white', padding: '10px', border: 'none', borderRadius: '4px', cursor: 'pointer', flex: 1 }}>Accept</button>
+                    <button onClick={handleReject} style={{ backgroundColor: 'red', color: 'white', padding: '10px', border: 'none', borderRadius: '4px', cursor: 'pointer', flex: 1 }}>Reject</button>
+                </div>
+            )}
+
+            {callStatus === 'CONNECTED' && (
+                <div style={{ marginTop: '20px' }}>
+                    <div style={{ height: '150px', overflowY: 'auto', border: '1px solid #555', padding: '10px', background: '#1e1e1e', borderRadius: '4px' }}>
+                        {messages.map((m, i) => (
+                            <p key={i} style={{ margin: '5px 0', color: m.sender === 'OWNER' ? '#4CAF50' : '#ff9800' }}>
+                                <strong>{m.sender}:</strong> {m.text}
+                            </p>
+                        ))}
+                    </div>
+                    <form onSubmit={send} style={{ display: 'flex', marginTop: '10px', gap: '5px' }}>
+                        <input type="text" value={typedMsg} onChange={(e) => setTypedMsg(e.target.value)} style={{ flex: 1, padding: '5px' }} placeholder="Scrivi al cancello..." />
+                        <button type="submit" style={{ padding: '5px 10px' }}>Invia</button>
+                    </form>
+                    <button onClick={handleReject} style={{ backgroundColor: 'red', color: 'white', padding: '8px', border: 'none', borderRadius: '4px', cursor: 'pointer', width: '100%', marginTop: '10px' }}>Terminate Call</button>
                 </div>
             )}
         </div>
     );
 }
+
+export default OwnerDashboard;

@@ -8,16 +8,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 /**
  * REST Controller representing the Web Adapter driving port interactions from the gate.
  */
 @RestController
-@RequestMapping("/api/v1/intercom")
+@RequestMapping("/api/intercom")
 @CrossOrigin(origins = "http://localhost:5173")
 public class IntercomGatewayController {
 
@@ -35,14 +34,11 @@ public class IntercomGatewayController {
     @PostMapping("/ring")
     @RateLimiter(name = "gateRateLimiter")
     public ResponseEntity<CallSessionResponseDto> ringTheBell(HttpServletRequest request) {
-        // Retrieve the guest IP address from the incoming request
         String guestIp = request.getRemoteAddr();
         log.info("HTTP POST request received at /ring from remote IP: {}", guestIp);
 
-        // Core business logic execution through Inbound Port
         CallSession session = manageCallUseCase.triggerRing(guestIp);
 
-        // Return network optimized DTO
         CallSessionResponseDto responseDto = new CallSessionResponseDto(
                 session.getId(),
                 session.getToken(),
@@ -50,5 +46,35 @@ public class IntercomGatewayController {
         );
 
         return ResponseEntity.ok(responseDto);
+    }
+
+    /**
+     * 🔥 Endpoint per accettare la chiamata dalla Home Dashboard.
+     * Mappato su: /api/intercom/calls/{sessionId}/accept
+     */
+    @PostMapping("/calls/{sessionId}/accept")
+    public ResponseEntity<Void> acceptCall(@PathVariable UUID sessionId) {
+        log.info("HTTP POST request received to ACCEPT call session: {}", sessionId);
+
+        // Esegue il caso d'uso dell'accettazione nel core domain
+        manageCallUseCase.acceptCall(sessionId);
+
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 🔥 Endpoint per rifiutare o terminare la chiamata (sia da Dashboard che da Gate).
+     * Mappato su: /api/intercom/calls/{sessionId}/terminate
+     */
+    @PostMapping("/calls/{sessionId}/terminate")
+    public ResponseEntity<Void> terminateCall(
+            @PathVariable UUID sessionId,
+            @RequestParam(defaultValue = "TERMINATED") String reason) {
+        log.info("HTTP POST request received to TERMINATE call session: {} due to: {}", sessionId, reason);
+
+        // Esegue il caso d'uso della terminazione archiviando i log
+        manageCallUseCase.terminateCall(sessionId, reason);
+
+        return ResponseEntity.ok().build();
     }
 }
