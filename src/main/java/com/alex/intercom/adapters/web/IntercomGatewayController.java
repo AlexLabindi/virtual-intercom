@@ -49,22 +49,22 @@ public class IntercomGatewayController {
     }
 
     /**
-     * 🔥 Endpoint per accettare la chiamata dalla Home Dashboard.
-     * Mappato su: /api/intercom/calls/{sessionId}/accept
-     */
+     * 🔥 Endpoint to accept the call from the Home Dashboard.
+     * * Mapped to: /api/intercom/calls/{sessionId}/accept
+     * */
     @PostMapping("/calls/{sessionId}/accept")
     public ResponseEntity<Void> acceptCall(@PathVariable UUID sessionId) {
         log.info("HTTP POST request received to ACCEPT call session: {}", sessionId);
 
-        // Esegue il caso d'uso dell'accettazione nel core domain
+        // Executes the acceptance use case in the core domain
         manageCallUseCase.acceptCall(sessionId);
 
         return ResponseEntity.ok().build();
     }
 
     /**
-     * 🔥 Endpoint per rifiutare o terminare la chiamata (sia da Dashboard che da Gate).
-     * Mappato su: /api/intercom/calls/{sessionId}/terminate
+     * 🔥 Endpoint to reject or terminate the call (from both Dashboard and Gate).
+     * * Mapped to: /api/intercom/calls/{sessionId}/terminate
      */
     @PostMapping("/calls/{sessionId}/terminate")
     public ResponseEntity<Void> terminateCall(
@@ -72,7 +72,7 @@ public class IntercomGatewayController {
             @RequestParam(defaultValue = "TERMINATED") String reason) {
         log.info("HTTP POST request received to TERMINATE call session: {} due to: {}", sessionId, reason);
 
-        // Esegue il caso d'uso della terminazione archiviando i log
+        // Executes the termination use case by archiving logs
         manageCallUseCase.terminateCall(sessionId, reason);
 
         return ResponseEntity.ok().build();

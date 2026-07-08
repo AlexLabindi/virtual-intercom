@@ -4,20 +4,20 @@ function OwnerDashboard({ callStatus, sessionId, messages, onSendMessage }) {
     const [typedMsg, setTypedMsg] = useState('');
 
     const handleAccept = async () => {
-        if (!sessionId) return console.error("Impossibile accettare: sessionId mancante!");
+        if (!sessionId) return console.error("Unable to accept: Missing sessionId!");
         try {
             await fetch(`http://localhost:8090/api/intercom/calls/${sessionId}/accept`, { method: 'POST' });
         } catch (err) {
-            console.error("Errore durante accept:", err);
+            console.error("Error while accepting:", err);
         }
     };
 
     const handleReject = async () => {
-        if (!sessionId) return console.error("Impossibile rifiutare: sessionId mancante!");
+        if (!sessionId) return console.error("Unable to refuse: Missing sessionId!");
         try {
             await fetch(`http://localhost:8090/api/intercom/calls/${sessionId}/terminate?reason=REJECTED`, { method: 'POST' });
         } catch (err) {
-            console.error("Errore durante terminate:", err);
+            console.error("Error while terminating:", err);
         }
     };
 
@@ -50,7 +50,7 @@ function OwnerDashboard({ callStatus, sessionId, messages, onSendMessage }) {
                         ))}
                     </div>
                     <form onSubmit={send} style={{ display: 'flex', marginTop: '10px', gap: '5px' }}>
-                        <input type="text" value={typedMsg} onChange={(e) => setTypedMsg(e.target.value)} style={{ flex: 1, padding: '5px' }} placeholder="Scrivi al cancello..." />
+                        <input type="text" value={typedMsg} onChange={(e) => setTypedMsg(e.target.value)} style={{ flex: 1, padding: '5px' }} placeholder="Write at the gate..." />
                         <button type="submit" style={{ padding: '5px 10px' }}>Invia</button>
                     </form>
                     <button onClick={handleReject} style={{ backgroundColor: 'red', color: 'white', padding: '8px', border: 'none', borderRadius: '4px', cursor: 'pointer', width: '100%', marginTop: '10px' }}>Terminate Call</button>

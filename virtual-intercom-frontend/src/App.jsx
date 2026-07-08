@@ -12,14 +12,14 @@ function App() {
         const ws = new WebSocket('ws://localhost:8090/ws/signaling');
 
         ws.onopen = () => {
-            console.log("✅ Interfono connesso al server di segnalazione");
+            console.log("✅ Intercom connected to the reporting server");
             setSocket(ws);
         };
 
         ws.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
-                console.log("📩 Evento WebSocket ricevuto:", data);
+                console.log("📩 WebSocket event received:", data);
 
                 if (data.event === "ring") {
                     setCallStatus("RINGING");
@@ -37,7 +37,7 @@ function App() {
                     setMessages((prev) => [...prev, { sender: data.sender, text: data.text }]);
                 }
             } catch (err) {
-                console.error("Errore decodifica WebSocket:", err);
+                console.error("WebSocket decoding error:", err);
             }
         };
         return () => ws.close();

@@ -14,14 +14,14 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     private final SignalingWebSocketHandler signalingWebSocketHandler;
 
-    // Spring inietta qui automaticamente l'handler contrassegnato come @Component
+    // Spring automatically injects the handler marked as @Component here.
     public WebSocketConfig(SignalingWebSocketHandler signalingWebSocketHandler) {
         this.signalingWebSocketHandler = signalingWebSocketHandler;
     }
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        // Espone l'endpoint di segnalazione e permette cross-origin da qualsiasi dominio (incluso il frontend Vite su 5173)
+        // Exposes the reporting endpoint and allows cross-origin from any domain (including the Vite frontend on 5173)
         registry.addHandler(signalingWebSocketHandler, "/ws/signaling")
                 .setAllowedOrigins("*");
     }
