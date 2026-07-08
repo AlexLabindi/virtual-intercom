@@ -37,7 +37,7 @@ public class IntercomGatewayController {
         String guestIp = request.getRemoteAddr();
         log.info("HTTP POST request received at /ring from remote IP: {}", guestIp);
 
-        CallSession session = manageCallUseCase.triggerRing(guestIp);
+        CallSession session = manageCallUseCase.triggerRing(guestIp);//invoca la porta di ingresso (Inbound Port) chiamando il metodo del caso d'uso
 
         CallSessionResponseDto responseDto = new CallSessionResponseDto(
                 session.getId(),
