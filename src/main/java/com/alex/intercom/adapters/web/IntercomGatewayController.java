@@ -38,13 +38,15 @@ public class IntercomGatewayController {
         log.info("HTTP POST request received at /ring from remote IP: {}", guestIp);
 
         CallSession session = manageCallUseCase.triggerRing(guestIp);//invoca la porta di ingresso (Inbound Port) chiamando il metodo del caso d'uso
+//L'interfaccia ManageCallUseCase è implementata dal servizio principale CallService.java, che rappresenta il "cervello" al centro dell'esagono.
+        //CallService crea una nuova istanza della classe di dominio pura CallSession, impostando lo stato iniziale su ACTIVE
 
         CallSessionResponseDto responseDto = new CallSessionResponseDto(
                 session.getId(),
                 session.getToken(),
                 session.getStatus()
         );
-
+//Il controller REST risponde infine alla fetch iniziale di React restituendo un DTO (CallSessionResponseDto) contenente l'UUID della sessione.
         return ResponseEntity.ok(responseDto);
     }
 

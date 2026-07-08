@@ -54,7 +54,9 @@ public class CallService implements ManageCallUseCase {
                 expiresAt
         );
 
-        CallSession savedSession = sessionRepositoryPort.save(newSession);
+        CallSession savedSession = sessionRepositoryPort.save(newSession);// salvataggio DB  tramite chiama una porta di uscita (Outbound Port): sessionRepositoryPort.save(session).
+        // L'adattatore della persistenza prende l'oggetto di dominio,
+        // lo traduce in un'entità Hibernate e lo scrive sul DB tramite la query INSERT INTO call_sessions....
         log.info("New call session successfully created with ID: {} and status: {}", sessionId, savedSession.getStatus());
 
         // TRIGGER WEBSOCKET: Avvisa la Dashboard in tempo reale che qualcuno sta suonando
