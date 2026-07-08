@@ -15,7 +15,7 @@ function App() {
             console.log("✅ Interfono connesso al server di segnalazione");
             setSocket(ws);
         };
-
+//Il server ha sparato il JSON sul canale WebSocket. In App.jsx, l'ascoltatore globale ws.onmessage cattura il messaggio:
         ws.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
