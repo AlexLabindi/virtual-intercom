@@ -8,6 +8,7 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -59,23 +60,29 @@ class CallServiceTest {
     @DisplayName("2. Should transition session status to CONNECTED when owner accepts the call")
     void shouldChangeStatusToConnectedWhenOwnerAccepts() {
         // GIVEN
-        UUID sessionId = UUID.randomUUID();
+        UUID sessionId = UUID.randomUUID(); // Coerente sia per la ricerca che per l'oggetto
         String guestIp = "192.168.1.50";
-        CallSession existingSession = new  CallSession(UUID.randomUUID(),guestIp,"TOKEN_ABC", "ACTIVE", LocalDateTime.now(),LocalDateTime.now().plusMinutes(2));
+        CallSession existingSession = new CallSession(sessionId, guestIp, "TOKEN_ABC", "ACTIVE", LocalDateTime.now(), LocalDateTime.now().plusMinutes(2));
 
         when(sessionRepositoryPort.findById(sessionId)).thenReturn(Optional.of(existingSession));
-        when(sessionRepositoryPort.save(any(CallSession.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Utilizziamo un ArgumentCaptor per catturare l'oggetto 'updatedSession' creato dentro il metodo
+        ArgumentCaptor<CallSession> sessionCaptor = ArgumentCaptor.forClass(CallSession.class);
 
         // WHEN
         callService.acceptCall(sessionId);
 
         // ASSERT / THEN
-        assertEquals("CONNECTED", existingSession.getStatus(), "The session status must transition to CONNECTED");
         verify(sessionRepositoryPort, times(1)).findById(sessionId);
-        verify(sessionRepositoryPort, times(1)).save(existingSession);
+        verify(sessionRepositoryPort, times(1)).save(sessionCaptor.capture());
+
+        // Estraiamo la sessione effettivamente passata al database al momento del save
+        CallSession savedSession = sessionCaptor.getValue();
+
+        assertEquals("CONNECTED", savedSession.getStatus(), "The session status passed to the repository must transition to CONNECTED");
+        assertEquals(sessionId, savedSession.getId(), "The session ID must remain unchanged");
         verify(webSocketNotificationPort, times(1)).broadcastNotification(contains("accept"));
     }
-
     @SneakyThrows
     @Test
     @DisplayName("3. Should throw an IllegalArgumentException when attempting to accept a non-existing session")
