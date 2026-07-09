@@ -1,4 +1,4 @@
-package com.alex.intercom.adapters.web.websocket; // o il tuo pacchetto adapters.web
+package com.alex.intercom.adapters.web.websocket;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,8 +13,8 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**") // Applica a tutti gli endpoint del backend
-                        .allowedOrigins("http://localhost:5173") // Consente il frontend React
+                registry.addMapping("/**") // Apply to all backend endpoints
+                        .allowedOrigins("http://localhost:5173") // Enables React frontend
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);

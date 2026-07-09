@@ -5,7 +5,7 @@ import GuestGate from './components/GuestGate';
 function App() {
     const [callStatus, setCallStatus] = useState('LISTENING'); // LISTENING, RINGING, CONNECTED
     const [sessionId, setSessionId] = useState(null);
-    const [messages, setMessages] = useState([]); // Lista dei messaggi della chat
+    const [messages, setMessages] = useState([]); // List of chat messages
     const [socket, setSocket] = useState(null);
 
     useEffect(() => {
@@ -23,7 +23,7 @@ function App() {
 
                 if (data.event === "ring") {
                     setCallStatus("RINGING");
-                    // Gestiamo sia se arriva come sessionId che come id
+                    // We handle whether it arrives as a sessionId or as an id
                     const id = data.sessionId || data.id;
                     setSessionId(id);
                     setMessages([]);
@@ -43,7 +43,7 @@ function App() {
         return () => ws.close();
     }, []);
 
-    // Funzione per inviare messaggi di chat tramite il WebSocket
+    // Function to send chat messages via WebSocket
     const sendChatMessage = (sender, text) => {
         if (socket && socket.readyState === WebSocket.OPEN) {
             const payload = JSON.stringify({

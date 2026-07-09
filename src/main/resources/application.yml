@@ -16,10 +16,9 @@ spring:
       ddl-auto: update
     show-sql: true
 
-resilience4j:
-  ratelimiter:
-    instances:
-      gateRateLimiter:
-        limitForPeriod: 3
-        limitRefreshPeriod: 1m
-        timeoutDuration: 0s
+resilience4j.ratelimiter:
+  instances:
+    gateRateLimiter:
+      limitForPeriod: 3
+      limitRefreshPeriod: 1m
+      timeoutDuration: 0s
