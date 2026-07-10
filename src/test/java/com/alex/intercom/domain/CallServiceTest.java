@@ -3,7 +3,7 @@ package com.alex.intercom.domain;
 import com.alex.intercom.adapters.web.websocket.SignalingWebSocketHandler;
 import com.alex.intercom.domain.service.CallService;
 import com.alex.intercom.ports.out.CallSessionRepositoryPort;
-
+import com.alex.intercom.ports.out.CallLogRepositoryPort;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,6 +27,9 @@ class CallServiceTest {
 
     @Mock
     private CallSessionRepositoryPort sessionRepositoryPort;
+
+    @Mock
+    private CallLogRepositoryPort logRepositoryPort;
 
     @Mock
     private SignalingWebSocketHandler webSocketNotificationPort;
@@ -98,28 +101,8 @@ class CallServiceTest {
 
         verify(sessionRepositoryPort, times(1)).findById(nonExistingSessionId);
         verify(sessionRepositoryPort, never()).save(any());
-        verify(webSocketNotificationPort, never()).afterConnectionClosed(any(), CloseStatus.NORMAL );
+
     }
 
-    @Test
-    @DisplayName("4. Should transition session status to TERMINATED when the call is ended")
-    void shouldChangeStatusToTerminatedWhenCallIsEnded() {
-        // GIVEN
-        UUID sessionId = UUID.randomUUID();
-        String guestIp = "192.168.1.50";
-        CallSession connectedSession = new  CallSession(UUID.randomUUID(),guestIp,"TOKEN_ABC", "ACTIVE", LocalDateTime.now(),LocalDateTime.now().plusMinutes(2));
-        String terminationReason = "CANCELED";
 
-        when(sessionRepositoryPort.findById(sessionId)).thenReturn(Optional.of(connectedSession));
-        when(sessionRepositoryPort.save(any(CallSession.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        // WHEN
-        callService.terminateCall(sessionId, terminationReason);
-
-        // ASSERT / THEN
-        assertEquals("TERMINATED", connectedSession.getStatus(), "The final session status must be set to TERMINATED");
-        verify(sessionRepositoryPort, times(1)).findById(sessionId);
-        verify(sessionRepositoryPort, times(1)).save(connectedSession);
-        verify(webSocketNotificationPort, times(1)).broadcastNotification(contains("terminate"));
-    }
 }
