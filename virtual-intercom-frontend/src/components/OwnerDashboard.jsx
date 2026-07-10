@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 
-function OwnerDashboard({ callStatus, sessionId, messages, onSendMessage, host }) {
+function OwnerDashboard({ callStatus, sessionId, setSessionId, setCallStatus, messages, onSendMessage, host }) {
     const [typedMsg, setTypedMsg] = useState('');
 
     const handleAccept = async () => {
         if (!sessionId) return;
         try {
-            await fetch(`http://${host}:8090/api/intercom/calls/${sessionId}/accept`, { method: 'POST' });
+            const response = await fetch(`http://${host}:8090/api/intercom/calls/${sessionId}/accept`, { method: 'POST' });
+            if (response.ok) {
+                // Forza lo stato su CONNECTED per mostrare subito la chat
+                setCallStatus('CONNECTED');
+            }
         } catch (err) {
             console.error("Errore durante accept:", err);
         }
@@ -15,7 +19,12 @@ function OwnerDashboard({ callStatus, sessionId, messages, onSendMessage, host }
     const handleReject = async () => {
         if (!sessionId) return;
         try {
-            await fetch(`http://${host}:8090/api/intercom/calls/${sessionId}/terminate?reason=REJECTED`, { method: 'POST' });
+            const response = await fetch(`http://${host}:8090/api/intercom/calls/${sessionId}/terminate?reason=REJECTED`, { method: 'POST' });
+            if (response.ok) {
+                // Reset totale dello stato per tornare alla schermata iniziale di standby
+                setCallStatus('LISTENING');
+                setSessionId(null);
+            }
         } catch (err) {
             console.error("Errore durante terminate:", err);
         }
@@ -34,7 +43,7 @@ function OwnerDashboard({ callStatus, sessionId, messages, onSendMessage, host }
                 🏠 Dashboard Proprietario
             </h2>
 
-            {/* BLOCCO 1: LISTENING - Modalità Standby, non ci sono tasti di azione */}
+            {/* BLOCCO 1: LISTENING - Standby */}
             {callStatus === 'LISTENING' && (
                 <div style={{ textAlign: 'center', padding: '40px 0', color: '#888' }}>
                     <div style={{ fontSize: '50px', marginBottom: '15px' }}>🛡️</div>
@@ -43,10 +52,10 @@ function OwnerDashboard({ callStatus, sessionId, messages, onSendMessage, host }
                 </div>
             )}
 
-            {/* BLOCCO 2: RINGING - Accetta o Rifiuta (niente annulla) */}
+            {/* BLOCCO 2: RINGING - Pulsanti funzionanti */}
             {callStatus === 'RINGING' && (
                 <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                    <div style={{ fontSize: '40px', animation: 'bounce 1s infinite' }}>📱</div>
+                    <div style={{ fontSize: '40px' }}>📱</div>
                     <h3 style={{ color: '#fff', marginTop: '10px' }}>Qualcuno è al cancello!</h3>
                     <div style={{ display: 'flex', gap: '15px', marginTop: '25px' }}>
                         <button onClick={handleAccept} style={{ flex: 1, backgroundColor: '#4CAF50', color: 'white', fontSize: '16px', fontWeight: 'bold', padding: '15px', border: 'none', borderRadius: '6px', cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>
@@ -59,7 +68,7 @@ function OwnerDashboard({ callStatus, sessionId, messages, onSendMessage, host }
                 </div>
             )}
 
-            {/* BLOCCO 3: CONNECTED - Finestra di Chat della Dashboard */}
+            {/* BLOCCO 3: CONNECTED - Chat */}
             {callStatus === 'CONNECTED' && (
                 <div style={{ marginTop: '10px' }}>
                     <div style={{ backgroundColor: '#111', color: '#00e676', padding: '8px', textAlign: 'center', borderRadius: '4px', marginBottom: '10px', fontSize: '14px', fontWeight: 'bold' }}>
