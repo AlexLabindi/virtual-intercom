@@ -6,6 +6,7 @@ import com.alex.intercom.domain.CallSession;
 import com.alex.intercom.ports.out.CallSessionRepositoryPort;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,42 +24,33 @@ public class CallSessionPersistenceAdapter implements CallSessionRepositoryPort 
     }
 
     @Override
-    public CallSession save(CallSession domainModel) {
-        // Map from Domain Model to JPA Entity
-        CallSessionEntity entity = new CallSessionEntity(
-                domainModel.getId(),
-                domainModel.getGuestIp(),
-                domainModel.getToken(),
-                domainModel.getStatus(),
-                domainModel.getCreatedAt(),
-                domainModel.getExpiresAt()
-        );
+    public CallSession save(CallSession domainSession) {
+        // Creiamo SEMPRE una nuova riga (Nuovo record di storico)
+        CallSessionEntity entity = new CallSessionEntity();
 
-        CallSessionEntity savedEntity = repository.save(entity);
+        entity.setSessionId(domainSession.getId()); // Mantiene l'ID originale inviato dal dominio
+        entity.setGuestIp(domainSession.getGuestIp());
+        entity.setToken(domainSession.getToken());
+        entity.setStatus(domainSession.getStatus()); // "ACTIVE", "CONNECTED" o "TERMINATED"
+        entity.setCreatedAt(LocalDateTime.now()); // Timestamp preciso di questa transizione
+        entity.setExpiresAt(domainSession.getExpiresAt());
 
-        // Map back from JPA Entity to Domain Model
-        return toDomain(savedEntity);
+        CallSessionEntity saved = repository.save(entity);
+
+        return toDomain(saved);
     }
 
     @Override
-    public Optional<CallSession> findById(UUID id) {
-        return repository.findById(id).map(this::toDomain);
+    public Optional<CallSession> findById(UUID sessionId) {
+        // Cerchiamo l'ultimo record inserito per questo ID di sessione
+        return repository.findFirstBySessionIdOrderByCreatedAtDesc(sessionId)
+                .map(this::toDomain);
     }
 
-    @Override
-    public Optional<CallSession> findByToken(String token) {
-        return repository.findByToken(token).map(this::toDomain);
-    }
-
-    // Helper method for encapsulation mapping
     private CallSession toDomain(CallSessionEntity entity) {
         return new CallSession(
-                entity.getId(),
-                entity.getGuestIp(),
-                entity.getToken(),
-                entity.getStatus(),
-                entity.getCreatedAt(),
-                entity.getExpiresAt()
+                entity.getSessionId(), entity.getGuestIp(), entity.getToken(),
+                entity.getStatus(), entity.getCreatedAt(), entity.getExpiresAt()
         );
     }
 }

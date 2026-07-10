@@ -9,5 +9,7 @@ import java.util.UUID;
  * Spring Data JPA Repository for CallSessionEntity.
  */
 public interface JpaCallSessionRepository extends JpaRepository<CallSessionEntity, UUID> {
-    Optional<CallSessionEntity> findByToken(String token);
+
+
+    Optional<CallSessionEntity> findFirstBySessionIdOrderByCreatedAtDesc(UUID sessionId);
 }

@@ -22,9 +22,12 @@ function App() {
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
+        console.log("📩 Messaggio WebSocket ricevuto:", data); // Ottimo per il debug in console
+
         if (data.event === "ring") {
           setCallStatus("RINGING");
-          setSessionId(data.sessionId || data.id);
+          // Estrae l'ID usando la proprietà esatta presente nel log JSON del backend
+          setSessionId(data.sessionId);
           setMessages([]);
         } else if (data.event === "accept") {
           setCallStatus("CONNECTED");
@@ -36,7 +39,7 @@ function App() {
           setMessages((prev) => [...prev, { sender: data.sender, text: data.text }]);
         }
       } catch (err) {
-        console.error("Errore WebSocket:", err);
+        console.error("Errore parsing WebSocket:", err);
       }
     };
 

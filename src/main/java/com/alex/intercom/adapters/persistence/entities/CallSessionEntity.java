@@ -1,8 +1,6 @@
 package com.alex.intercom.adapters.persistence.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,11 +21,17 @@ import java.util.UUID;
 public class CallSessionEntity {
 
     @Id
-    private UUID id;
-
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "row_id") // Chiave primaria della riga autoincrementale
+    private Long rowId;
+    @Column(name = "id", nullable = false)
+    private UUID sessionId;
+    @Column(name = "guest_ip")
     private String guestIp;
     private String token;
     private String status;
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
+    @Column(name = "expires_at")
     private LocalDateTime expiresAt;
 }

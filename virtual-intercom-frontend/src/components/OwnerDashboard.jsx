@@ -4,29 +4,39 @@ function OwnerDashboard({ callStatus, sessionId, setSessionId, setCallStatus, me
     const [typedMsg, setTypedMsg] = useState('');
 
     const handleAccept = async () => {
-        if (!sessionId) return;
+        console.log("🔘 Click su ACCETTA. ID Sessione attuale:", sessionId);
+        if (!sessionId) {
+            console.error("❌ Impossibile accettare: sessionId è NULL o UNDEFINED!");
+            return;
+        }
         try {
             const response = await fetch(`http://${host}:8090/api/intercom/calls/${sessionId}/accept`, { method: 'POST' });
             if (response.ok) {
-                // Forza lo stato su CONNECTED per mostrare subito la chat
                 setCallStatus('CONNECTED');
+            } else {
+                console.error("❌ Il server ha rifiutato la richiesta di accept:", response.status);
             }
         } catch (err) {
-            console.error("Errore durante accept:", err);
+            console.error("Errore di rete durante accept:", err);
         }
     };
 
     const handleReject = async () => {
-        if (!sessionId) return;
+        console.log("🔘 Click su RIFIUTA. ID Sessione attuale:", sessionId);
+        if (!sessionId) {
+            console.error("❌ Impossibile rifiutare: sessionId è NULL o UNDEFINED!");
+            return;
+        }
         try {
             const response = await fetch(`http://${host}:8090/api/intercom/calls/${sessionId}/terminate?reason=REJECTED`, { method: 'POST' });
             if (response.ok) {
-                // Reset totale dello stato per tornare alla schermata iniziale di standby
                 setCallStatus('LISTENING');
                 setSessionId(null);
+            } else {
+                console.error("❌ Il server ha rifiutato la richiesta di terminate:", response.status);
             }
         } catch (err) {
-            console.error("Errore durante terminate:", err);
+            console.error("Errore di rete durante terminate:", err);
         }
     };
 
@@ -52,11 +62,12 @@ function OwnerDashboard({ callStatus, sessionId, setSessionId, setCallStatus, me
                 </div>
             )}
 
-            {/* BLOCCO 2: RINGING - Pulsanti funzionanti */}
+            {/* BLOCCO 2: RINGING - Schermata di controllo della chiamata */}
             {callStatus === 'RINGING' && (
                 <div style={{ textAlign: 'center', padding: '20px 0' }}>
                     <div style={{ fontSize: '40px' }}>📱</div>
                     <h3 style={{ color: '#fff', marginTop: '10px' }}>Qualcuno è al cancello!</h3>
+                    <p style={{ fontSize: '11px', color: '#666' }}>ID: {sessionId || "Mancante"}</p>
                     <div style={{ display: 'flex', gap: '15px', marginTop: '25px' }}>
                         <button onClick={handleAccept} style={{ flex: 1, backgroundColor: '#4CAF50', color: 'white', fontSize: '16px', fontWeight: 'bold', padding: '15px', border: 'none', borderRadius: '6px', cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>
                             ✔️ ACCETTA
@@ -68,7 +79,7 @@ function OwnerDashboard({ callStatus, sessionId, setSessionId, setCallStatus, me
                 </div>
             )}
 
-            {/* BLOCCO 3: CONNECTED - Chat */}
+            {/* BLOCCO 3: CONNECTED - Interfaccia Chat */}
             {callStatus === 'CONNECTED' && (
                 <div style={{ marginTop: '10px' }}>
                     <div style={{ backgroundColor: '#111', color: '#00e676', padding: '8px', textAlign: 'center', borderRadius: '4px', marginBottom: '10px', fontSize: '14px', fontWeight: 'bold' }}>

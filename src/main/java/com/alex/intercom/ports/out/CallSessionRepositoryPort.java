@@ -10,5 +10,5 @@ import java.util.UUID;
 public interface CallSessionRepositoryPort {
     CallSession save(CallSession callSession);
     Optional<CallSession> findById(UUID id);
-    Optional<CallSession> findByToken(String token);
+   // Optional<CallSession> findByToken(String token);
 }
