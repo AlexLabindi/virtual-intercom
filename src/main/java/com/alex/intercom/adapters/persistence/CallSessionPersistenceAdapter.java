@@ -12,6 +12,8 @@ import java.util.UUID;
 /**
  * Persistence Adapter implementing the outbound port for managing Call Sessions.
  * Maps between pure domain models and JPA database entities.
+ *  Implementa l'interfaccia della Outbound Port,
+ *  confinando al suo interno le entità Hibernate e traducendo gli oggetti di dominio in record relazionali per il database.
  */
 @Component
 public class CallSessionPersistenceAdapter implements CallSessionRepositoryPort {

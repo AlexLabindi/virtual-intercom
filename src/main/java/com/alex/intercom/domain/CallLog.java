@@ -5,6 +5,10 @@ import java.util.UUID;
 
 /**
  * Pure Domain model representing the historical record of a completed intercom call.
+ * Il Nucleo Puro (Core Domain): Le entità di business fondamentali, quali CallSession e CallLog,
+ * sono modellate come oggetti Java puri, completamente svincolati da annotazioni JPA (@Entity) o di serializzazione Jackson.
+ * Lo stato logico del ciclo di vita della chiamata (stati: ACTIVE, CONNECTED, TERMINATED)
+ * viene governato unicamente all'interno di questo strato isolato.
  */
 public class CallLog {
     private final Long id;

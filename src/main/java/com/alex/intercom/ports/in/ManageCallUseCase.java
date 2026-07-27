@@ -5,6 +5,8 @@ import java.util.UUID;
 
 /**
  * Inbound port defining the core business actions for an intercom call lifecycle.
+ * Interfaccia ManageCallUseCase che formalizza le azioni consentite sul sistema
+ * (es. triggerRing, acceptCall, terminateCall).
  */
 public interface ManageCallUseCase {
 
